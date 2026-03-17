@@ -5,10 +5,14 @@ window.onload = function () {
   addWarrant();
 };
 
+// helper
 function q(id) {
   return document.getElementById(id);
 }
 
+//
+// OFFICER SAVE / LOAD
+//
 function saveOfficer() {
   const data = {
     officerName: q("officerName").value,
@@ -29,13 +33,15 @@ function loadOfficer() {
 
   const data = JSON.parse(raw);
 
-  Object.keys(data).forEach(function (key) {
-    const el = q(key);
-    if (el) el.value = data[key];
+  Object.keys(data).forEach(key => {
+    if (q(key)) q(key).value = data[key];
   });
 }
 
-function addWarrant(copyIndex) {
+//
+// WARRANT HANDLING
+//
+function addWarrant(copyIndex = null) {
   let w = {
     charge: "",
     statute: "",
@@ -43,21 +49,12 @@ function addWarrant(copyIndex) {
     narrative: ""
   };
 
-  if (typeof copyIndex === "number" && warrants[copyIndex]) {
-    w = {
-      charge: warrants[copyIndex].charge,
-      statute: warrants[copyIndex].statute,
-      cdr: warrants[copyIndex].cdr,
-      narrative: warrants[copyIndex].narrative
-    };
+  if (copyIndex !== null && warrants[copyIndex]) {
+    w = { ...warrants[copyIndex] };
   }
 
   warrants.push(w);
   renderWarrants();
-}
-
-function updateWarrant(index, field, value) {
-  warrants[index][field] = value;
 }
 
 function removeWarrant(index) {
@@ -65,39 +62,35 @@ function removeWarrant(index) {
   renderWarrants();
 }
 
+function updateWarrant(index, field, value) {
+  warrants[index][field] = value;
+}
+
 function renderWarrants() {
   const container = q("warrants");
   container.innerHTML = "";
 
-  warrants.forEach(function (w, i) {
-    const block = document.createElement("div");
-    block.className = "warrant-block";
+  warrants.forEach((w, i) => {
+    const div = document.createElement("div");
+    div.className = "warrant-block";
 
-    block.innerHTML = `
+    div.innerHTML = `
       <h3>Warrant ${i + 1}</h3>
 
-      <input
-        placeholder="Charge"
-        value="${escapeHtml(w.charge)}"
-        onchange="updateWarrant(${i}, 'charge', this.value)"
-      />
+      <input placeholder="Charge"
+        value="${w.charge}"
+        onchange="updateWarrant(${i}, 'charge', this.value)" />
 
-      <input
-        placeholder="Statute"
-        value="${escapeHtml(w.statute)}"
-        onchange="updateWarrant(${i}, 'statute', this.value)"
-      />
+      <input placeholder="Statute"
+        value="${w.statute}"
+        onchange="updateWarrant(${i}, 'statute', this.value)" />
 
-      <input
-        placeholder="CDR Code"
-        value="${escapeHtml(w.cdr)}"
-        onchange="updateWarrant(${i}, 'cdr', this.value)"
-      />
+      <input placeholder="CDR Code"
+        value="${w.cdr}"
+        onchange="updateWarrant(${i}, 'cdr', this.value)" />
 
-      <textarea
-        placeholder="Narrative"
-        onchange="updateWarrant(${i}, 'narrative', this.value)"
-      >${escapeHtml(w.narrative)}</textarea>
+      <textarea placeholder="Narrative"
+        onchange="updateWarrant(${i}, 'narrative', this.value)">${w.narrative}</textarea>
 
       <div class="row">
         <button onclick="addWarrant(${i})">Duplicate</button>
@@ -105,50 +98,50 @@ function renderWarrants() {
       </div>
     `;
 
-    container.appendChild(block);
+    container.appendChild(div);
   });
 }
 
+//
+// CLEAR
+//
 function clearCase() {
-  const ids = [
-    "defName",
-    "dob",
-    "defAddress",
-    "incidentDate",
-    "incidentTime",
-    "caseNumber",
-    "incidentLocation"
-  ];
+  if (!confirm("Clear case data?")) return;
 
-  ids.forEach(function (id) {
-    const el = q(id);
-    if (el) el.value = "";
-  });
+  ["defName","dob","defAddress","incidentDate","incidentTime","caseNumber","incidentLocation"]
+    .forEach(id => {
+      if (q(id)) q(id).value = "";
+    });
 
   warrants = [];
   q("downloads").innerHTML = "";
   addWarrant();
 }
 
-function escapeHtml(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
+//
+// GENERATE PDF (SAFE TEST VERSION)
+//
 function generatePDFs() {
   const downloads = q("downloads");
   downloads.innerHTML = "";
 
+  if (!warrants.length) {
+    alert("Add at least one warrant");
+    return;
+  }
+
   const defName = q("defName").value || "Test Defendant";
 
-  const link = document.createElement("a");
-  link.href = "AD111.pdf";
-  link.download = defName + " Warrant 1.pdf";
-  link.textContent = "Download " + defName + " Warrant 1.pdf";
+  // create ONE test download link per warrant
+  warrants.forEach((w, i) => {
+    const fileName = `${defName} Warrant ${i + 1}.pdf`;
 
-  downloads.appendChild(link);
-  link.click();
+    const link = document.createElement("a");
+    link.href = "AD111.pdf"; // your uploaded PDF
+    link.download = fileName;
+    link.textContent = `Tap to download ${fileName}`;
+    link.target = "_blank";
+
+    downloads.appendChild(link);
+  });
 }
