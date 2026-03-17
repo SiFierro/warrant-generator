@@ -5,14 +5,10 @@ window.onload = function () {
   addWarrant();
 };
 
-// helper
 function q(id) {
   return document.getElementById(id);
 }
 
-//
-// OFFICER SAVE / LOAD
-//
 function saveOfficer() {
   const data = {
     officerName: q("officerName").value,
@@ -38,9 +34,6 @@ function loadOfficer() {
   });
 }
 
-//
-// WARRANT HANDLING
-//
 function addWarrant(copyIndex = null) {
   let w = {
     charge: "",
@@ -78,19 +71,19 @@ function renderWarrants() {
       <h3>Warrant ${i + 1}</h3>
 
       <input placeholder="Charge"
-        value="${w.charge}"
+        value="${escapeHtml(w.charge)}"
         onchange="updateWarrant(${i}, 'charge', this.value)" />
 
       <input placeholder="Statute"
-        value="${w.statute}"
+        value="${escapeHtml(w.statute)}"
         onchange="updateWarrant(${i}, 'statute', this.value)" />
 
       <input placeholder="CDR Code"
-        value="${w.cdr}"
+        value="${escapeHtml(w.cdr)}"
         onchange="updateWarrant(${i}, 'cdr', this.value)" />
 
       <textarea placeholder="Narrative"
-        onchange="updateWarrant(${i}, 'narrative', this.value)">${w.narrative}</textarea>
+        onchange="updateWarrant(${i}, 'narrative', this.value)">${escapeHtml(w.narrative)}</textarea>
 
       <div class="row">
         <button onclick="addWarrant(${i})">Duplicate</button>
@@ -102,9 +95,6 @@ function renderWarrants() {
   });
 }
 
-//
-// CLEAR
-//
 function clearCase() {
   if (!confirm("Clear case data?")) return;
 
@@ -118,10 +108,15 @@ function clearCase() {
   addWarrant();
 }
 
-//
-// GENERATE PDF (SAFE TEST VERSION)
-//
-function generatePDFs() {
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+async function generatePDFs() {
   const downloads = q("downloads");
   downloads.innerHTML = "";
 
@@ -130,18 +125,29 @@ function generatePDFs() {
     return;
   }
 
-  const defName = q("defName").value || "Test Defendant";
+  try {
+    const response = await fetch("./AD111.pdf");
 
-  // create ONE test download link per warrant
-  warrants.forEach((w, i) => {
-    const fileName = `${defName} Warrant ${i + 1}.pdf`;
+    if (!response.ok) {
+      alert("Could not load AD111.pdf");
+      return;
+    }
 
-    const link = document.createElement("a");
-    link.href = "AD111.pdf"; // your uploaded PDF
-    link.download = fileName;
-    link.textContent = `Tap to download ${fileName}`;
-    link.target = "_blank";
+    const pdfBlob = await response.blob();
+    const defName = q("defName").value || "Test Defendant";
 
-    downloads.appendChild(link);
-  });
+    warrants.forEach((w, i) => {
+      const fileName = `${defName} Warrant ${i + 1}.pdf`;
+      const objectUrl = URL.createObjectURL(pdfBlob);
+
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = fileName;
+      link.textContent = `Download ${fileName}`;
+
+      downloads.appendChild(link);
+    });
+  } catch (err) {
+    alert("PDF load failed: " + err.message);
+  }
 }
