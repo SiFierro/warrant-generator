@@ -1,46 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AD111 Warrant Generator</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="wrap">
+    <h1>AD111 Warrant Generator</h1>
+    <p class="sub">Test version. Only core deputy-entered fields are enabled.</p>
 
-<h1>AD111 Warrant Generator</h1>
+    <section class="card">
+      <h2>Officer Defaults</h2>
+      <div class="grid two">
+        <input id="officerName" placeholder="Officer Name / Affiant" />
+        <input id="rank" placeholder="Rank" />
+        <input id="badge" placeholder="Employee #" />
+        <input id="agency" value="Aiken County Sheriff's Office" placeholder="Agency" />
+        <input id="ori" value="SC0020000" placeholder="ORI" />
+        <input id="officerPhone" placeholder="Telephone" />
+      </div>
+      <div class="row">
+        <button onclick="saveOfficer()">Save Officer Defaults</button>
+      </div>
+    </section>
 
-<div class="card">
-  <h2>Officer Defaults (Saved Locally)</h2>
-  <input id="officerName" placeholder="Officer Name">
-  <input id="rank" placeholder="Rank">
-  <input id="badge" placeholder="Employee #">
-  <input id="agency" value="Aiken County Sheriff's Office">
-  <input id="ori" value="SC0020000">
-  <button onclick="saveOfficer()">Save</button>
-</div>
+    <section class="card">
+      <h2>Defendant / Incident</h2>
+      <div class="grid two">
+        <input id="defName" placeholder="Defendant Full Name" />
+        <input id="dob" placeholder="DOB" />
+        <input id="defAddress" placeholder="Address" />
+        <input id="incidentDate" placeholder="Incident Date" />
+        <input id="incidentTime" placeholder="Incident Time" />
+        <input id="caseNumber" placeholder="Case Number" />
+        <input id="incidentLocation" placeholder="Incident Location" />
+      </div>
+    </section>
 
-<div class="card">
-  <h2>Defendant Info</h2>
-  <input id="defName" placeholder="Full Name">
-  <input id="dob" placeholder="DOB">
-  <input id="address" placeholder="Address">
-  <input id="race" placeholder="Race">
-  <input id="sex" placeholder="Sex">
-</div>
+    <section class="card">
+      <h2>Warrants</h2>
+      <div class="row">
+        <button onclick="addWarrant()">Add Warrant</button>
+      </div>
+      <div id="warrants"></div>
+    </section>
 
-<div class="card">
-  <h2>Warrants</h2>
-  <button onclick="addWarrant()">Add Warrant</button>
-  <div id="warrants"></div>
-</div>
+    <section class="card">
+      <div class="row wrap-buttons">
+        <button onclick="generatePDFs()">Generate Test PDFs</button>
+        <button class="danger" onclick="clearCase()">Clear Case</button>
+      </div>
+      <div id="downloads" class="downloads"></div>
+    </section>
+  </div>
 
-<div class="card">
-  <button onclick="generatePDFs()">Generate PDFs</button>
-  <button onclick="clearCase()">Clear Case</button>
-</div>
-
-<script src="https://unpkg.com/pdf-lib"></script>
-<script src="app.js"></script>
-
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/downloadjs@1.4.7/download.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
